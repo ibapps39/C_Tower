@@ -1,0 +1,133 @@
+##################################################
+# 🔥 NUCLEAR OPTION: macOS TRASH (.DS_Store etc.)
+##################################################
+
+# Kill .DS_Store everywhere
+.DS_Store
+**/.DS_Store
+*/.DS_Store
+.DS_Store?
+._.DS_Store
+
+# AppleDouble crap
+._*
+.AppleDouble
+.LSOverride
+
+# macOS metadata folders
+.Spotlight-V100
+.Trashes
+.fseventsd
+.DocumentRevisions-V100
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Network share junk
+.AppleDB
+.AppleDesktop
+
+##################################################
+# 🧠 Editor / IDE junk
+##################################################
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.tmp
+
+##################################################
+# 🛠️ Build outputs (C/C++, raylib, SDL)
+##################################################
+
+# Generic
+build/
+bin/
+obj/
+out/
+dist/
+debug/
+release/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+
+# Autotools
+aclocal.m4
+autom4te.cache/
+config.log
+config.status
+configure
+libtool
+m4/
+
+##################################################
+# ⚙️ Compiled binaries / objects
+##################################################
+
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+
+##################################################
+# 🍎 macOS / Xcode (if you ever touch it)
+##################################################
+
+DerivedData/
+*.xcworkspace
+*.xcuserdata
+*.xcuserstate
+
+##################################################
+# 🎮 raylib / SDL specifics
+##################################################
+
+# If you build libraries locally
+raylib/build/
+raylib/src/*.o
+SDL/build/
+SDL/build-*/
+
+##################################################
+# 🧪 Logs / temp
+##################################################
+
+*.log
+*.cache
+*.pid
+
+##################################################
+# 💀 Extra paranoia (just in case)
+##################################################
+
+# Sometimes Finder sneaks variants
+*.DS_Store
+**/*.DS_Store
+
+
+# ### One more thing (important)
+
+# `.gitignore` won’t remove files already tracked. If `.DS_Store` already got in your repo, purge it:
+
+# ```
+# find . -name ".DS_Store" -delete
+# git rm -r --cached .
+# git add .
+# git commit -m "purge .DS_Store and apply gitignore"
+# ```
+
+# ---
+
+# If you want, I can also give you a **pre-commit hook that auto-deletes `.DS_Store` before every commit**, so it literally never sneaks in again.
