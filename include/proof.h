@@ -351,18 +351,19 @@ uint8_t bot_tick(Player* p, float dt) {
     
     if (!p || !p->active || p->active_effect == STUNNED || p->type == UNASSIGNED || p->type == PLAYER) return 0;
     
-    Player* target      = NULL;
+    Player* target      = &PLAYERS[0];
     float   closest     = 1e9f;
     
-    for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (&PLAYERS[i] == p || !PLAYERS[i].active) continue;
-        float d = Vector3Distance(p->pos, PLAYERS[i].pos);
-        if (d < closest) { closest = d; target = &PLAYERS[i]; }
-    }
+    // for (int i = 0; i < MAX_PLAYERS; i++) {
+    //     if (&PLAYERS[i] == p || !PLAYERS[i].active) continue;
+    //     float d = Vector3Distance(p->pos, PLAYERS[i].pos);
+    //     if (d < closest) { closest = d; target = &PLAYERS[i]; }
+    // }
     if (!target) return 0;
     // move towards it
-    Vec3 dir = Vector3Normalize(Vector3Subtract(target->pos, p->pos));
-    p->accel = (Vec3){ dir.x * DEFAULT_PLAYER_SPEED, 0, dir.z * DEFAULT_PLAYER_SPEED };
+    Vec3 dir    = Vector3Normalize(Vector3Subtract(target->pos, p->pos));
+    float d     = Vector3Distance(p->pos, PLAYERS[0].pos);
+    p->accel    = d > EPSILON ? (Vec3){ dir.x * DEFAULT_PLAYER_SPEED, 0, dir.z * DEFAULT_PLAYER_SPEED } : (Vec3){0};
     move(&p->pos, &p->vel, &p->accel, dt);
     if (CheckCollisionBoxes(p->hitbox.box, target->hitbox.box)) {
         Attack a = { 10, 3, 1, NONE };
