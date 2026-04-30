@@ -1,7 +1,8 @@
 ##################################################
 # 🔥 NUCLEAR OPTION: macOS TRASH (.DS_Store etc.)
 ##################################################
-
+GAME
+.build/
 # Kill .DS_Store everywhere
 .DS_Store
 **/.DS_Store
@@ -131,3 +132,4 @@ SDL/build-*/
 # ---
 
 # If you want, I can also give you a **pre-commit hook that auto-deletes `.DS_Store` before every commit**, so it literally never sneaks in again.
+GAME

@@ -1,63 +1,64 @@
+#include "proof.h"
+
+
+
 int main(void) {
-    InitWindow(1280, 720, "Arena");
-    SetTargetFPS(60);
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
+    InitWindow(RES_X, RES_Y, "Arena");
+    SetTargetFPS(DEFAULT_FPS);
     DisableCursor();
+
+    MATCH_TIME = DEFAULT_MATCH_TIME;
  
-    // spawn players
-    Vec3 spawns[4] = { {-5,0,-5}, {5,0,-5}, {-5,0,5}, {5,0,5} };
-    PLAYER_COUNT = 4;
-    Players[0] = make_player("P1",  spawns[0], PLAYER);
-    Players[1] = make_player("BOT1",spawns[1], BOT);
-    Players[2] = make_player("BOT2",spawns[2], BOT);
-    Players[3] = make_player("BOT3",spawns[3], BOT);
- 
-    make_teams(2);
- 
-    GAME_STATE.game_time = 120.0;
-    GAME_STATE.running   = 1;
- 
-    PlayerState local = {
-        .game               = &GAME_STATE,
-        .player_points      = 0,
-        .players_team       = Teams[0],
-        .player_controlled  = Players[0],
-    };
- 
-    while (!WindowShouldClose() && GAME_STATE.running) {
+    // spawn my player
+    PLAYERS[0] = make_player("User", (Vec3){0, FLOOR, 0}, PLAYER);
+    PLAYER_COUNT = 1;
+    PLAYERS[0].type = PLAYER;
+    Player* my_human_player = &PLAYERS[0];
+
+    //bots
+    for (size_t i = 1; i < MAX_PLAYERS; i++)
+    {
+        PLAYERS[i] = make_player("BOT", (Vec3){i*3.00f, FLOOR, 0}, BOT);
+        PLAYER_COUNT++;
+        PLAYERS[i].type = BOT;
+    }
+    
+    
+
+    while (!WindowShouldClose()) {
+        
         float dt = GetFrameTime();
-        GAME_STATE.game_time -= dt;
-        if (GAME_STATE.game_time <= 0) GAME_STATE.running = 0;
- 
+        GAME_STATE.game_time = MATCH_TIME - GetTime();
+        if (GAME_STATE.game_time <= 0) GAME_STATE.game_over = 1;
+        if (GAME_STATE.game_over)
+        {
+            game_over();
+        }
+        
         // input + move local player
-        handle_input(&local, dt);
-        Player* lp = local.player_controlled;
-        move(&lp->pos, &lp->vel, &lp->accel, dt);
-        update_hitbox(lp);
-        follow_cam(lp);
- 
+        controls(my_human_player, DEFAULT_PLAYER_SPEED, dt);
+        cam_handle(my_human_player, my_human_player->hitbox.box.max.y*2);
+        for(int i = 1; i<MAX_PLAYERS; i++) bot_tick(&PLAYERS[i], dt); 
         // attack input
-        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_2)) {
-            Attack swing = { 15, 5, 0.2, NONE };
-            for (int i = 1; i < PLAYER_COUNT; i++)
-                attack(swing, lp, Players[i]);
-        }
  
-        // bots
-        for (int i = 1; i < PLAYER_COUNT; i++) {
-            bot_tick(Players[i], dt);
-            move(&Players[i]->pos, &Players[i]->vel, &Players[i]->accel, dt);
-            update_hitbox(Players[i]);
-        }
- 
-        update_game_state();
- 
+        // move_bots
+
+        // ipdaupdatete hitboxes, more?
+        update_PLAYERS();
+        
+
         BeginDrawing();
             ClearBackground(BLACK);
-            BeginMode3D(*lp->cam);
+            BeginMode3D(*my_human_player->cam);
                 DrawGrid(40, 1.0f);
-                draw_players();
+                for (int i = 0; i < MAX_PLAYERS; i++) {
+                    if (PLAYERS[i].type == UNASSIGNED) continue;
+                    Color c = (i == 0) ? GREEN : RED;
+                    DrawBoundingBox(PLAYERS[i].hitbox.box, c);
+                }
             EndMode3D();
-            draw_hud(&local);
+            DrawText(TextFormat("Time: %.1f", GAME_STATE.game_time), 10, 10, 20, WHITE);
         EndDrawing();
     }
  
