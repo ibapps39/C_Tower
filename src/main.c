@@ -11,7 +11,7 @@ int main(void) {
     MATCH_TIME = DEFAULT_MATCH_TIME;
  
     // spawn my player
-    PLAYERS[0] = make_player("User", (Vec3){0, FLOOR, 0}, PLAYER);
+    PLAYERS[0] = create_player("User", (Vec3){0, FLOOR, 0}, PLAYER);
     PLAYER_COUNT = 1;
     PLAYERS[0].type = PLAYER;
     Player* my_human_player = &PLAYERS[0];
@@ -19,17 +19,20 @@ int main(void) {
     //bots
     for (size_t i = 1; i < MAX_PLAYERS; i++)
     {
-        PLAYERS[i] = make_player("BOT", (Vec3){i*3.00f, FLOOR, 0}, BOT);
+        PLAYERS[i] = create_player("BOT", (Vec3){i*3.00f, FLOOR, 0}, BOT);
         PLAYER_COUNT++;
         PLAYERS[i].type = BOT;
     }
-    
-    
+    if(init_stages(PLAYERS[0])) { set_stages(); }
+    place_players();
+    for(size_t i = 1; i < PLAYER_COUNT; i++) { PLAYERS[i].active = 0; }
 
     while (!WindowShouldClose()) {
         
         float dt = GetFrameTime();
         GAME_STATE.game_time = MATCH_TIME - GetTime();
+        if(IsKeyDown(KEY_C)) PLAYERS[0].cam->target = PLAYERS[0].center_pos;
+        if(IsKeyDown(KEY_G)) PLAYERS[0].center_pos = (Vec3){0, FLOOR, 0};
         if (GAME_STATE.game_time <= 0) GAME_STATE.game_over = 1;
         if (GAME_STATE.game_over)
         {
@@ -38,27 +41,35 @@ int main(void) {
         
         // input + move local player
         controls(my_human_player, DEFAULT_PLAYER_SPEED, dt);
-        cam_handle(my_human_player, my_human_player->hitbox.box.max.y*2);
-        for(int i = 1; i<MAX_PLAYERS; i++) bot_tick(&PLAYERS[i], dt); 
+        cam_handle(my_human_player);
+        for(int i = 1; i<MAX_PLAYERS; i++) bot_tick(&PLAYERS[i], dt);
         // attack input
+
  
         // move_bots
+        update_PLAYERS(); // this has to come first
+        floor_collisions();
+        player_bump_collisions();  // Uses update_hitbox_pos internally
+        stage_manager();
 
-        // ipdaupdatete hitboxes, more?
-        update_PLAYERS();
-        
+        if (IsKeyDown(KEY_Q)) for(size_t i = 1; i < PLAYER_COUNT; i++) PLAYERS[i].active = 0;
+        if (IsKeyDown(KEY_E)) for(size_t i = 1; i < PLAYER_COUNT; i++) PLAYERS[i].active = 1;
 
         BeginDrawing();
             ClearBackground(BLACK);
             BeginMode3D(*my_human_player->cam);
-                DrawGrid(40, 1.0f);
+            DrawPlane((Vec3){0, 0, 0}, (Vec2){10000, 10000}, ORANGE);
                 for (int i = 0; i < MAX_PLAYERS; i++) {
                     if (PLAYERS[i].type == UNASSIGNED) continue;
                     Color c = (i == 0) ? GREEN : RED;
                     DrawBoundingBox(PLAYERS[i].hitbox.box, c);
                 }
+                draw_stage();   // ALWAYS visible — all 4 stages
+                draw_PLAYERS();        // Your drawing function
             EndMode3D();
-            DrawText(TextFormat("Time: %.1f", GAME_STATE.game_time), 10, 10, 20, WHITE);
+            // UI overlay
+            DrawText(TextFormat("Score: %u", PLAYERS[0].score), 10, 10, 20, WHITE);
+            DrawText(TextFormat("Time: %.1f", GAME_STATE.game_time), 10, 40, 20, WHITE);
         EndDrawing();
     }
  
